@@ -20,7 +20,7 @@ const LoginSignup = () => {
   // const navigate = useNavigate();
   const handleChange = (e) => {
     const { name, value } = e.target;
-    console.log(name, value);
+    // console.log(name, value);
     const copySignupInfo = { ...signupInfo };
     copySignupInfo[name] = value;
     setSignupInfo(copySignupInfo);
@@ -55,12 +55,18 @@ const LoginSignup = () => {
         return handleError(message);
       }
     } catch (error) {
-      if (error.response) {
-        const errDetails = error.response.data.error.details[0].message;
-        handleError(errDetails);
-      } else {
-        handleError(error);
-      }
+      if(error.response.status === 409){
+              const conflictError = error.response.data.message;
+              handleError(conflictError);
+            }
+            else if(error.response){
+              const errDetails = error.response.data.error.details[0].message;
+              handleError(errDetails);
+            }
+            else{
+              handleError(error);
+            }
+      
     }
   };
 
