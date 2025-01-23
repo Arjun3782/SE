@@ -47,7 +47,11 @@ function Signup() {
         return handleError(message);
       }
     } catch (error) {
-      if(error.response){
+      if(error.response.status === 409){
+        const conflictError = error.response.data.message;
+        handleError(conflictError);
+      }
+      else if(error.response){
         const errDetails = error.response.data.error.details[0].message;
         handleError(errDetails);
       }
