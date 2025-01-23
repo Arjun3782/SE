@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./Css/LoginSignUp.css";
 import axios from "axios";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { handleError, handleSuccess } from "../utils";
 
@@ -10,6 +10,7 @@ const LoginSignup = () => {
   const toggleForm = () => {
     setIsLogin(!isLogin);
   };
+  // const Signup = () => {}
   // TODO:
   const [signupInfo, setSignupInfo] = useState({
     name: "",
@@ -18,7 +19,7 @@ const LoginSignup = () => {
   });
 
   // const navigate = useNavigate();
-  const handleChange = (e) => {
+  const handleSignupChange = (e) => {
     const { name, value } = e.target;
     // console.log(name, value);
     const copySignupInfo = { ...signupInfo };
@@ -55,20 +56,74 @@ const LoginSignup = () => {
         return handleError(message);
       }
     } catch (error) {
-      if(error.response.status === 409){
-              const conflictError = error.response.data.message;
-              handleError(conflictError);
-            }
-            else if(error.response){
-              const errDetails = error.response.data.error.details[0].message;
-              handleError(errDetails);
-            }
-            else{
-              handleError(error);
-            }
+      if (error.response.status === 409) {
+        const conflictError = error.response.data.message;
+        handleError(conflictError);
+      } else if (error.response) {
+        const errDetails = error.response.data.error.details[0].message;
+        handleError(errDetails);
+      } else {
+        handleError(error);
+      }
     }
   };
 
+  //FIXME:
+  const [loginInfo, setLoginInfo] = useState({
+    email: "",
+    password: "",
+  });
+  const navigate = useNavigate();
+  const handleLoginChange = (e) => {
+    const { name, value } = e.target;
+    // console.log(name, value);
+    const copyLoginInfo = { ...loginInfo };
+    copyLoginInfo[name] = value;
+    setLoginInfo(copyLoginInfo);
+  };
+  // console.log("Logging info--> ",signupInfo);
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    const { email, password } = loginInfo;
+    if (!email || !password) {
+      return handleError("Please fill all the fields");
+    }
+    try {
+      const url = "http://localhost:8080/auth/login";
+      const response = await axios.post(url, loginInfo, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const result = await response.data;
+      const { message, success, error } = result;
+      if (success) {
+        console.log(result);
+        console.log("Login completed");
+        handleSuccess(message);
+        setTimeout(() => {
+          navigate("/home");
+        }, 3000);
+      } else if (error) {
+        const errDetails = response.data.details.message;
+        return handleError(errDetails);
+      } else {
+        return handleError(message);
+      }
+    } catch (error) {
+      console.log(error);
+      if (error.response.status === 403) {
+        const conflictError = error.response.data.message;
+        handleError(conflictError);
+      } else if (error.response) {
+        const errDetails = error.response.data.error.details[0].message;
+        handleError(errDetails);
+      } else {
+        handleError(error);
+      }
+    }
+  };
+  //FIXME:
   //TODO:
 
   return (
@@ -77,12 +132,27 @@ const LoginSignup = () => {
         {/* Login Form */}
         <div className="form-box login-box">
           <h2>Login</h2>
-          <form>
+          <form onSubmit={handleLogin}>
             <div className="input-field">
-              <input type="email" placeholder="Email" required />
+              <input
+                type="email"
+                name="email"
+                id="login-email"
+                placeholder="Enter your email"
+                value={loginInfo.email}
+                onChange={handleLoginChange}
+                autoFocus
+              />
             </div>
             <div className="input-field">
-              <input type="password" placeholder="Password" required />
+              <input
+                type="password"
+                name="password"
+                id="login-password"
+                placeholder="Enter your password"
+                value={loginInfo.password}
+                onChange={handleLoginChange}
+              />
             </div>
             <button type="submit" className="btn">
               Login
@@ -104,7 +174,7 @@ const LoginSignup = () => {
                 id="name"
                 placeholder="Username"
                 value={signupInfo.name}
-                onChange={handleChange}
+                onChange={handleSignupChange}
               />
             </div>
             <div className="input-field">
@@ -114,7 +184,7 @@ const LoginSignup = () => {
                 id="email"
                 placeholder="Email"
                 value={signupInfo.email}
-                onChange={handleChange}
+                onChange={handleSignupChange}
               />
             </div>
             <div className="input-field">
@@ -124,7 +194,7 @@ const LoginSignup = () => {
                 id="password"
                 placeholder="Password"
                 value={signupInfo.password}
-                onChange={handleChange}
+                onChange={handleSignupChange}
               />
             </div>
             <button type="submit" className="btn">
